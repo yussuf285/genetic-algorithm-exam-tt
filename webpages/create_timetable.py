@@ -106,12 +106,13 @@ if all_dept_files:
                     display_df["Course Code"] = display_df["Course Code"].str.upper()
                     
                     # Display metrics at top
-                    col1, col2, col3 = st.columns(3)
+                    # col1, col2, col3 = st.columns(3)
+                    col1, col2 = st.columns(2)
                     with col1:
                         st.metric("📚 Total Courses", len(display_df))
+                    # with col2:
+                        # st.metric("", int(display_df["Units"].sum()))
                     with col2:
-                        st.metric("📝 Total Units", int(display_df["Units"].sum()))
-                    with col3:
                         if "Level" in display_df.columns:
                             st.metric("🎓 Levels", display_df["Level"].nunique())
                     
@@ -179,6 +180,20 @@ if generate_btn and all_files_uploaded():
     # quick maps
     venue_capacity = {v['venue_id']: int(v['capacity']) for v in venues_list}
     venue_name = {v['venue_id']: v.get('venue_name', v['venue_id']) for v in venues_list}
+
+    # ---- VENUE CAPACITY VALIDATION ----
+    MIN_VENUE_CAPACITY = 40
+    invalid_venues = [
+        v for v in venues_list 
+        if int(v['capacity']) <= MIN_VENUE_CAPACITY
+    ]
+    
+    if invalid_venues:
+        st.error(f"❌ **Venue Capacity Error**: The following venues have capacity of {MIN_VENUE_CAPACITY} or less and cannot be used:")
+        for v in invalid_venues:
+            st.error(f"  • {v.get('venue_name', v['venue_id'])} (ID: {v['venue_id']}) - Capacity: {v['capacity']}")
+        st.warning("Please upload a venue file with venues that have capacity greater than 40 students.")
+        st.stop()
 
     # show chosen venues
     st.sidebar.markdown("**Using venues:**")
